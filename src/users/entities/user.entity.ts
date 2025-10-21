@@ -29,5 +29,4 @@ export class User {
     default: 'user',
   })
   role: string;
-
 }
