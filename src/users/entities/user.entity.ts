@@ -29,4 +29,7 @@ export class User {
     default: 'user',
   })
   role: string;
+
+  @Column({ name: 'hashed_refresh_token', nullable: true })
+  hashedRefreshToken: string;
 }

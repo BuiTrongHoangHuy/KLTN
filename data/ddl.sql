@@ -31,6 +31,7 @@ CREATE TABLE "Users" (
                          "username" VARCHAR(50) UNIQUE NOT NULL,
                          "email" VARCHAR(100) UNIQUE NOT NULL,
                          "password_hash" VARCHAR(255) NOT NULL,
+                         "hashed_refresh_token" VARCHAR(255),
                          "full_name" VARCHAR(100) NOT NULL,
                          "avatar_url" VARCHAR(255),
                          "bio" TEXT,
@@ -50,7 +51,6 @@ CREATE TABLE "Posts" (
 
                          FOREIGN KEY ("user_id") REFERENCES "Users"("user_id") ON DELETE CASCADE
 );
-
 CREATE TABLE "Comments" (
                             "comment_id" SERIAL PRIMARY KEY,
                             "post_id" INT NOT NULL,
