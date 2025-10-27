@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity({ name: 'Users' }) // Tên bảng trong CSDL
+@Entity({ name: 'Users' })
 export class User {
   @PrimaryGeneratedColumn()
   user_id: number;
@@ -14,11 +14,11 @@ export class User {
   @Column({ name: 'password_hash', nullable: false })
   passwordHash: string;
 
-  @Column({ length: 100, nullable: false })
-  full_name: string;
+  @Column({ name: 'full_name', length: 100, nullable: false })
+  fullName: string;
 
-  @Column({ nullable: true })
-  avatar_url: string;
+  @Column({ name: 'avatar_url', nullable: true })
+  avatarUrl: string;
 
   @Column({ type: 'text', nullable: true })
   bio: string;

@@ -1,1 +1,19 @@
-export class CreateUserDto {}
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+
+export class CreateUserDto {
+  @IsString()
+  @IsNotEmpty()
+  username: string;
+
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @MinLength(8, { message: 'Mật khẩu phải có ít nhất 8 ký tự' })
+  password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  fullName: string;
+}
