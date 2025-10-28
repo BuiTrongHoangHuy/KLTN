@@ -27,8 +27,13 @@ export class PostsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postsService.update(+id, updatePostDto);
+  @UseGuards(AtGuard)
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updatePostDto: UpdatePostDto,
+    @GetUser() user: JwtPayload,
+  ) {
+    return this.postsService.update(id, updatePostDto, user);
   }
 
   @Delete(':id')

@@ -1,4 +1,5 @@
 import { User } from 'src/users/entities/user.entity';
+import { Comment } from 'src/comments/entities/comment.entity';
 import {
   Column,
   CreateDateColumn,
@@ -7,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 
 type PrivacyEnum = 'public' | 'friends' | 'private';
@@ -41,4 +43,7 @@ export class Post {
   @ManyToOne(() => User, (user) => user.posts)
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @OneToMany(() => Comment, (comment) => comment.post)
+  comments: Comment[];
 }

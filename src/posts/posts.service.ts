@@ -1,9 +1,10 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from './entities/post.entity';
 import { Repository } from 'typeorm';
 import { UpdatePostDto } from './dto/update-post.dto';
+import type { JwtPayload } from '../auth/strategies/rt.strategy';
 
 @Injectable()
 export class PostsService {
@@ -59,8 +60,28 @@ export class PostsService {
     return post;
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  async update(id: number, updatePostDto: UpdatePostDto, user: JwtPayload) {
+    const post = await this.postsRepository.findOneBy({ postId: id });
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    if (post.userId !== user.sub) {
+      throw new UnauthorizedException(
+        'You do not have permission to update this post',
+      );
+    }
+
+    try {
+      this.postsRepository.merge(post, updatePostDto);
+
+      await this.postsRepository.save(post);
+
+      return post;
+    } catch (error) {
+      throw new InternalServerErrorException('Could not update post');
+    }
   }
 
   remove(id: number) {
