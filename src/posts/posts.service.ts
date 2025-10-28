@@ -84,7 +84,24 @@ export class PostsService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  async remove(id: number, user: JwtPayload) {
+    const post = await this.postsRepository.findOneBy({ postId: id });
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    if (post.userId !== user.sub) {
+      throw new UnauthorizedException(
+        'You do not have permission to delete this post',
+      );
+    }
+
+    try {
+      await this.postsRepository.remove(post);
+      return { message: 'Delete success' };
+    } catch (error) {
+      throw new InternalServerErrorException('Could not delete post');
+    }
   }
 }
