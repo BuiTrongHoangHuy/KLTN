@@ -142,4 +142,23 @@ export class FriendshipsService {
       throw new InternalServerErrorException('Could not cancel friend request');
     }
   }
+
+  async unfriend(userId1: number, userId2: number) {
+    const relationship = await this.getRelationship(userId1, userId2);
+
+    if (!relationship) {
+      throw new NotFoundException('Not found friendship');
+    }
+
+    if (relationship.status !== 'accepted') {
+      throw new ConflictException('Cannot unfriend a non-friend');
+    }
+
+    try {
+      await this.friendshipsRepository.remove(relationship);
+      return { message: 'Đã hủy kết bạn thành công' };
+    } catch (error) {
+      throw new InternalServerErrorException('Could not unfriend user');
+    }
+  }
 }

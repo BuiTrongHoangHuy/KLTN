@@ -44,4 +44,13 @@ export class FriendshipsController {
   ) {
     return this.friendshipsService.cancelFriendRequest(user.sub, receiverId);
   }
+
+  @Delete(':userId/unfriend')
+  @HttpCode(HttpStatus.OK)
+  unfriend(
+    @Param('userId', ParseIntPipe) friendId: number,
+    @GetUser() user: JwtPayload,
+  ) {
+    return this.friendshipsService.unfriend(user.sub, friendId);
+  }
 }
