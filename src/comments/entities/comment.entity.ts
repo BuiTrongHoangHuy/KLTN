@@ -5,10 +5,11 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  ManyToOne,
+  ManyToOne, OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CommentLike } from '../../likes/entities/comment-like.entity';
 
 type AnalysisStatusEnum = 'positive' | 'neutral' | 'negative';
 
@@ -50,4 +51,7 @@ export class Comment {
   @ManyToOne(() => User, (user) => user.comments)
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @OneToMany(() => CommentLike, (like) => like.comment)
+  likes: CommentLike[];
 }
