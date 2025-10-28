@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from './entities/post.entity';
@@ -35,8 +35,28 @@ export class PostsService {
     return `This action returns all posts`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
+  async findOne(id: number) {
+    const post = await this.postsRepository
+      .createQueryBuilder('post')
+      .leftJoin('post.user', 'user')
+      .select([
+        'post.postId',
+        'post.content',
+        'post.mediaUrl',
+        'post.privacy',
+        'post.created_at',
+        'user.userId',
+        'user.username',
+        'user.fullName',
+        'user.avatarUrl',
+      ])
+      .where('post.postId = :id', { id })
+      .getOne();
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+    return post;
   }
 
   update(id: number, updatePostDto: UpdatePostDto) {
