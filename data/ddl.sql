@@ -98,6 +98,7 @@ CREATE TABLE "Friendships" (
                                FOREIGN KEY ("user_two_id") REFERENCES "Users"("user_id") ON DELETE CASCADE,
                                CHECK ("user_one_id" < "user_two_id") -- Ngăn (A, B) và (B, A) cùng tồn tại
 );
+ALTER TABLE "Friendships" ADD COLUMN "action_user_id" INT NOT NULL;
 
 CREATE TABLE "Follows" (
                            "follower_id" INT NOT NULL,

@@ -3,6 +3,7 @@ import { Post } from '../../posts/entities/post.entity';
 import { Comment } from 'src/comments/entities/comment.entity';
 import { Like } from '../../likes/entities/like.entity';
 import { CommentLike } from '../../likes/entities/comment-like.entity';
+import { Friendship } from '../../friendships/entities/friendship.entity';
 
 @Entity({ name: 'Users' })
 export class User {
@@ -48,4 +49,10 @@ export class User {
 
   @OneToMany(() => CommentLike, (like) => like.user)
   commentLikes: CommentLike[];
+
+  @OneToMany(() => Friendship, (friendship) => friendship.userOne)
+  friendshipsInitiated: Friendship[]; // userId = user_one_id
+
+  @OneToMany(() => Friendship, (friendship) => friendship.userOne)
+  friendshipsReceived: Friendship[]; // userId = user_two_id
 }
