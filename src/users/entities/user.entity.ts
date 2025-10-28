@@ -1,9 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Post } from '../../posts/entities/post.entity';
 
 @Entity({ name: 'Users' })
 export class User {
-  @PrimaryGeneratedColumn()
-  user_id: number;
+  @PrimaryGeneratedColumn({ name: 'user_id' })
+  userId: number;
 
   @Column({ unique: true, length: 50, nullable: false })
   username: string;
@@ -32,4 +33,7 @@ export class User {
 
   @Column({ name: 'hashed_refresh_token', nullable: true })
   hashedRefreshToken: string;
+
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Post[];
 }

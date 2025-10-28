@@ -20,15 +20,15 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: string) {
-    return this.usersService.findOne(+id);
-  }
-
   @Get('me')
   @UseGuards(AtGuard)
   getProfile(@GetUser() user: JwtPayload) {
     return this.usersService.findOne(user.sub);
+  }
+
+  @Get(':id')
+  findOne(@Param('id', ParseIntPipe) id: string) {
+    return this.usersService.findOne(+id);
   }
 
   @Patch(':id')

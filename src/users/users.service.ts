@@ -56,7 +56,7 @@ export class UsersService {
 
   async findOne(id: number) {
     const user = await this.usersRepository.findOne({
-      where: { user_id: id },
+      where: { userId: id },
     });
 
     if (!user) {

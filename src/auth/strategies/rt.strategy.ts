@@ -34,7 +34,7 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
       throw new UnauthorizedException('No refresh token provided');
     }
     const user = await this.usersRepository.findOne({
-      where: { user_id: payload.sub },
+      where: { userId: payload.sub },
     });
     if (!user || !user.hashedRefreshToken) {
       throw new UnauthorizedException('Invalid refresh token');

@@ -32,7 +32,7 @@ export class AuthService {
     }
 
     const payload = {
-      sub: user.user_id,
+      sub: user.userId,
       username: user.username,
       role: user.role,
     };
@@ -50,7 +50,7 @@ export class AuthService {
 
     const salt = await bcrypt.genSalt(10);
     const hashedRefreshToken = await bcrypt.hash(refreshToken, salt);
-    await this.usersRepository.update(user.user_id, {
+    await this.usersRepository.update(user.userId, {
       hashedRefreshToken: hashedRefreshToken,
     });
 
@@ -61,13 +61,13 @@ export class AuthService {
   }
 
   async refreshToken(userId: number) {
-    const user = await this.usersRepository.findOneBy({ user_id: userId });
+    const user = await this.usersRepository.findOneBy({ userId: userId });
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
     const payload = {
-      sub: user.user_id,
+      sub: user.userId,
       username: user.username,
       role: user.role,
     };
@@ -85,7 +85,7 @@ export class AuthService {
 
     const salt = await bcrypt.genSalt(10);
     const hashedRefreshToken = await bcrypt.hash(refreshToken, salt);
-    await this.usersRepository.update(user.user_id, {
+    await this.usersRepository.update(user.userId, {
       hashedRefreshToken: hashedRefreshToken,
     });
 
