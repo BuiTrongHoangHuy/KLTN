@@ -2,7 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
   ConflictException,
-  BadRequestException,
+  BadRequestException, NotFoundException, UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Friendship } from './entities/friendship.entity';
@@ -57,6 +57,64 @@ export class FriendshipsService {
         throw error;
       }
       throw new InternalServerErrorException('Could not send friend request');
+    }
+  }
+
+  private async getRelationship(userId1: number, userId2: number) {
+    const userOneId = Math.min(userId1, userId2);
+    const userTwoId = Math.max(userId1, userId2);
+    return this.friendshipsRepository.findOneBy({ userOneId, userTwoId });
+  }
+
+  async acceptFriendRequest(receiverId: number, senderId: number) {
+    const relationship = await this.getRelationship(receiverId, senderId);
+
+    if (!relationship) {
+      throw new NotFoundException('Not found friend request');
+    }
+
+    if (relationship.status !== 'pending') {
+      throw new ConflictException('Cannot accept this friend request');
+    }
+
+    if (relationship.actionUserId === receiverId) {
+      throw new UnauthorizedException(
+        'You are not the receiver of this friend request',
+      );
+    }
+
+    try {
+      relationship.status = 'accepted';
+      relationship.actionUserId = receiverId;
+      await this.friendshipsRepository.save(relationship);
+      return { message: 'Accepted Request' };
+    } catch (error) {
+      throw new InternalServerErrorException('Could not accept friend request');
+    }
+  }
+
+  async rejectFriendRequest(receiverId: number, senderId: number) {
+    const relationship = await this.getRelationship(receiverId, senderId);
+
+    if (!relationship) {
+      throw new NotFoundException('Not found friend request');
+    }
+
+    if (relationship.status !== 'pending') {
+      throw new ConflictException('Cannot reject this friend request');
+    }
+
+    if (relationship.actionUserId === receiverId) {
+      throw new UnauthorizedException(
+        'You are not the receiver of this friend request',
+      );
+    }
+
+    try {
+      await this.friendshipsRepository.remove(relationship);
+      return { message: 'Rejected friend request' };
+    } catch (error) {
+      throw new InternalServerErrorException('Could not reject friend request');
     }
   }
 }
