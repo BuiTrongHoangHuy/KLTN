@@ -117,4 +117,29 @@ export class FriendshipsService {
       throw new InternalServerErrorException('Could not reject friend request');
     }
   }
+
+  async cancelFriendRequest(senderId: number, receiverId: number) {
+    const relationship = await this.getRelationship(senderId, receiverId);
+
+    if (!relationship) {
+      throw new NotFoundException('Not found friend request');
+    }
+
+    if (relationship.status !== 'pending') {
+      throw new ConflictException('Cannot cancel this friend request');
+    }
+
+    if (relationship.actionUserId !== senderId) {
+      throw new UnauthorizedException(
+        'You are not the sender of this friend request',
+      );
+    }
+
+    try {
+      await this.friendshipsRepository.remove(relationship);
+      return { message: 'Cancelled friend request' };
+    } catch (error) {
+      throw new InternalServerErrorException('Could not cancel friend request');
+    }
+  }
 }
