@@ -17,10 +17,14 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { AtGuard } from '../auth/guards/at.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import type { JwtPayload } from '../auth/strategies/rt.strategy';
+import { LikesService } from '../likes/likes.service';
 
 @Controller('posts')
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(
+    private readonly postsService: PostsService,
+    private readonly likesService: LikesService,
+  ) {}
 
   @Post()
   @UseGuards(AtGuard)
@@ -53,5 +57,12 @@ export class PostsController {
   @HttpCode(HttpStatus.OK)
   remove(@Param('id', ParseIntPipe) id: number, @GetUser() user: JwtPayload) {
     return this.postsService.remove(+id, user);
+  }
+
+  @Post(':id/like')
+  @UseGuards(AtGuard)
+  @HttpCode(HttpStatus.OK)
+  toggleLike( @Param('id', ParseIntPipe) id: number, @GetUser() user: JwtPayload) {
+    return this.likesService.togglePostLike(id, user.sub);
   }
 }

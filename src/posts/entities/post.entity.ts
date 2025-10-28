@@ -10,6 +10,7 @@ import {
   JoinColumn,
   OneToMany,
 } from 'typeorm';
+import { Like } from '../../likes/entities/like.entity';
 
 type PrivacyEnum = 'public' | 'friends' | 'private';
 
@@ -46,4 +47,7 @@ export class Post {
 
   @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[];
+
+  @OneToMany(() => Like, (like) => like.user)
+  likes: Like[];
 }
