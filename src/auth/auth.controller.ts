@@ -2,7 +2,13 @@ import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RtGuard } from './guards/rt.guard';
+import { GetUser } from './decorators/get-user.decorator';
 
+type JwtPayload = {
+  sub: number;
+  username: string;
+  role: string;
+};
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -13,9 +19,7 @@ export class AuthController {
 
   @Post('refresh')
   @UseGuards(RtGuard)
-  refreshToken(@Req() req: any) {
-    const user = req.user;
-    console.log(req);
+  refreshToken(@GetUser() user: JwtPayload) {
     return this.authService.refreshToken(user.sub);
   }
 }
