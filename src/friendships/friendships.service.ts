@@ -161,4 +161,43 @@ export class FriendshipsService {
       throw new InternalServerErrorException('Could not unfriend user');
     }
   }
+
+  async findMyFriends(userId: number) {
+    try {
+      const relationships = await this.friendshipsRepository
+        .createQueryBuilder('friendship')
+        .leftJoinAndSelect('friendship.userOne', 'userOne')
+        .leftJoinAndSelect('friendship.userTwo', 'userTwo')
+        .select([
+          'friendship.status',
+          'friendship.updatedAt',
+          'userOne.userId',
+          'userOne.username',
+          'userOne.fullName',
+          'userOne.avatarUrl',
+          'userTwo.userId',
+          'userTwo.username',
+          'userTwo.fullName',
+          'userTwo.avatarUrl',
+        ])
+        .where('friendship.status = :status', { status: 'accepted' })
+        .andWhere(
+          '(friendship.userOneId = :userId OR friendship.userTwoId = :userId)',
+          { userId },
+        )
+        .getMany();
+
+      const friends = relationships.map((rel) => {
+        if (rel.userOne.userId === userId) {
+          return rel.userTwo;
+        } else {
+          return rel.userOne;
+        }
+      });
+
+      return friends;
+    } catch (error) {
+      throw new InternalServerErrorException('Lỗi khi tải danh sách bạn bè');
+    }
+  }
 }

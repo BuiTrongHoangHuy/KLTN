@@ -6,7 +6,7 @@ import {
   UseGuards,
   ParseIntPipe,
   HttpCode,
-  HttpStatus,
+  HttpStatus, Get,
 } from '@nestjs/common';
 import { FriendshipsService } from './friendships.service';
 import { AtGuard } from 'src/auth/guards/at.guard';
@@ -52,5 +52,10 @@ export class FriendshipsController {
     @GetUser() user: JwtPayload,
   ) {
     return this.friendshipsService.unfriend(user.sub, friendId);
+  }
+
+  @Get()
+  findMyFriends(@GetUser() user: JwtPayload) {
+    return this.friendshipsService.findMyFriends(user.sub);
   }
 }
