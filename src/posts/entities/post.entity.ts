@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { Like } from '../../likes/entities/like.entity';
 import { PostMedia } from './post-media.entity';
+import { PostHashtag } from '../../hashtags/entities/post-hashtag.entity';
 
 type PrivacyEnum = 'public' | 'friends' | 'private';
 
@@ -53,4 +54,7 @@ export class Post {
     cascade: true,
   })
   medias: PostMedia[];
+
+  @OneToMany(() => PostHashtag, (postHashtag) => postHashtag.post)
+  hashtags: PostHashtag[];
 }

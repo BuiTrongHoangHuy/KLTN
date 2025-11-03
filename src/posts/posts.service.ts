@@ -1,4 +1,9 @@
-import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from './entities/post.entity';
@@ -6,6 +11,8 @@ import { Repository } from 'typeorm';
 import { UpdatePostDto } from './dto/update-post.dto';
 import type { JwtPayload } from '../auth/strategies/rt.strategy';
 import { PostMedia } from './entities/post-media.entity';
+import { HashtagsService } from '../hashtags/hashtags.service';
+import { PostHashtag } from '../hashtags/entities/post-hashtag.entity';
 
 @Injectable()
 export class PostsService {
@@ -14,33 +21,51 @@ export class PostsService {
     private postsRepository: Repository<Post>,
     @InjectRepository(PostMedia)
     private postMediaRepository: Repository<PostMedia>,
+    private hashtagsService: HashtagsService,
   ) {}
 
   async create(createPostDto: CreatePostDto, userId: number) {
-    try {
-      const { content, medias, privacy } = createPostDto;
+    return this.postsRepository.manager.transaction(
+      async (transactionalEntityManager) => {
+        try {
+          const { content, medias, privacy } = createPostDto;
 
-      const newPost = this.postsRepository.create({
-        content,
-        privacy,
-        userId: userId,
-      });
+          const newPost = transactionalEntityManager.create(Post,{
+            content,
+            privacy,
+            userId: userId,
+          });
 
-      if (medias && medias.length > 0) {
-        newPost.medias = medias.map((media, index) =>
-          this.postMediaRepository.create({
-            mediaUrl: media.url,
-            mediaType: media.type,
-            displayOrder: index,
-          }),
-        );
-      }
-      await this.postsRepository.save(newPost);
+          if (medias && medias.length > 0) {
+            newPost.medias = medias.map((media, index) =>
+              transactionalEntityManager.create(PostMedia, {
+                mediaUrl: media.url,
+                mediaType: media.type,
+                displayOrder: index,
+              }),
+            );
+          }
+          const savedPost = await transactionalEntityManager.save(newPost);
+          const tagTexts = this.hashtagsService.extractHashtags(content);
+          if (tagTexts.length > 0) {
+            const hashtags =
+              await this.hashtagsService.findOrCreateHashtags(tagTexts);
 
-      return newPost;
-    } catch (error) {
-      throw new InternalServerErrorException('Could not create post');
-    }
+            const postHashtags = hashtags.map((tag) =>
+              transactionalEntityManager.create(PostHashtag, {
+                postId: savedPost.postId,
+                hashtagId: tag.hashtagId,
+              }),
+            );
+
+            await transactionalEntityManager.save(postHashtags);
+          }
+          return savedPost;
+        } catch (error) {
+          throw new InternalServerErrorException('Could not create post');
+        }
+      },
+    );
   }
 
   findAll() {

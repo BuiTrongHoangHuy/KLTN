@@ -9,6 +9,7 @@ import { PostsModule } from './posts/posts.module';
 import { LikesModule } from './likes/likes.module';
 import { FriendshipsModule } from './friendships/friendships.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { HashtagsModule } from './hashtags/hashtags.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     LikesModule,
     FriendshipsModule,
     CloudinaryModule,
+    HashtagsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

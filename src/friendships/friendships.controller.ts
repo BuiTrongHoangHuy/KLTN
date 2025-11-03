@@ -6,7 +6,8 @@ import {
   UseGuards,
   ParseIntPipe,
   HttpCode,
-  HttpStatus, Get,
+  HttpStatus,
+  Get,
 } from '@nestjs/common';
 import { FriendshipsService } from './friendships.service';
 import { AtGuard } from 'src/auth/guards/at.guard';

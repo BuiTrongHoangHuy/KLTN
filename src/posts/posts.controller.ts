@@ -68,7 +68,10 @@ export class PostsController {
   @Post(':id/like')
   @UseGuards(AtGuard)
   @HttpCode(HttpStatus.OK)
-  toggleLike(@Param('id', ParseIntPipe) id: number, @GetUser() user: JwtPayload) {
+  toggleLike(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser() user: JwtPayload,
+  ) {
     return this.likesService.togglePostLike(id, user.sub);
   }
 

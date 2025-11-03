@@ -67,10 +67,23 @@ export class UsersService {
     return result;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+  async updateProfile(userId: number, updateUserDto: UpdateUserDto) {
+    const user = await this.usersRepository.findOneBy({ userId: userId });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
+    try {
+      this.usersRepository.merge(user, updateUserDto);
+      await this.usersRepository.save(user);
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { passwordHash, hashedRefreshToken, ...result } = user;
+      return result;
+    } catch (error) {
+      throw new InternalServerErrorException('Error updating profile');
+    }
+  }
   remove(id: number) {
     return `This action removes a #${id} user`;
   }
