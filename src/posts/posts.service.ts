@@ -5,25 +5,36 @@ import { Post } from './entities/post.entity';
 import { Repository } from 'typeorm';
 import { UpdatePostDto } from './dto/update-post.dto';
 import type { JwtPayload } from '../auth/strategies/rt.strategy';
+import { PostMedia } from './entities/post-media.entity';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectRepository(Post)
     private postsRepository: Repository<Post>,
+    @InjectRepository(PostMedia)
+    private postMediaRepository: Repository<PostMedia>,
   ) {}
 
   async create(createPostDto: CreatePostDto, userId: number) {
     try {
-      const { content, mediaUrl, privacy } = createPostDto;
+      const { content, medias, privacy } = createPostDto;
 
       const newPost = this.postsRepository.create({
         content,
-        mediaUrl,
         privacy,
         userId: userId,
       });
 
+      if (medias && medias.length > 0) {
+        newPost.medias = medias.map((media, index) =>
+          this.postMediaRepository.create({
+            mediaUrl: media.url,
+            mediaType: media.type,
+            displayOrder: index,
+          }),
+        );
+      }
       await this.postsRepository.save(newPost);
 
       return newPost;
@@ -40,6 +51,7 @@ export class PostsService {
     const post = await this.postsRepository
       .createQueryBuilder('post')
       .leftJoin('post.user', 'user')
+      .leftJoinAndSelect('post.medias', 'medias')
       .select([
         'post.postId',
         'post.content',
@@ -50,8 +62,13 @@ export class PostsService {
         'user.username',
         'user.fullName',
         'user.avatarUrl',
+        'medias.mediaId',
+        'medias.mediaUrl',
+        'medias.mediaType',
+        'medias.displayOrder',
       ])
       .where('post.postId = :id', { id })
+      .orderBy('media.displayOrder', 'ASC')
       .getOne();
 
     if (!post) {
@@ -74,7 +91,7 @@ export class PostsService {
     }
 
     try {
-      this.postsRepository.merge(post, updatePostDto);
+      //this.postsRepository.merge(post, updatePostDto);
 
       await this.postsRepository.save(post);
 

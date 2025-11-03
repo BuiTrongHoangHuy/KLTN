@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS
     "Users", "Posts", "Comments", "Likes", "Comment_Likes",
     "Friendships", "Follows", "Notifications", "Reports",
-    "Tags", "Hashtags", "Post_Hashtags" CASCADE;
+    "Tags", "Hashtags", "Post_Hashtags", "Post_Media" CASCADE;
 
 -- delete ENUM
 DROP TYPE IF EXISTS role_enum;
@@ -10,6 +10,7 @@ DROP TYPE IF EXISTS analysis_status_enum;
 DROP TYPE IF EXISTS friendship_status_enum;
 DROP TYPE IF EXISTS notification_type_enum;
 DROP TYPE IF EXISTS report_status_enum;
+DROP TYPE IF EXISTS media_type_enum;
 
 -- =============================================
 -- 1. create ENUM
@@ -21,7 +22,7 @@ CREATE TYPE analysis_status_enum AS ENUM ('positive', 'neutral', 'negative');
 CREATE TYPE friendship_status_enum AS ENUM ('pending', 'accepted', 'blocked');
 CREATE TYPE notification_type_enum AS ENUM ('like_post', 'like_comment', 'comment', 'reply', 'friend_request', 'follow', 'tag');
 CREATE TYPE report_status_enum AS ENUM ('pending', 'resolved');
-
+CREATE TYPE media_type_enum AS ENUM ('image', 'video');
 -- =============================================
 -- 2. create TABLES
 -- =============================================
@@ -51,6 +52,8 @@ CREATE TABLE "Posts" (
 
                          FOREIGN KEY ("user_id") REFERENCES "Users"("user_id") ON DELETE CASCADE
 );
+ALTER TABLE "Posts" DROP COLUMN "media_url";
+
 CREATE TABLE "Comments" (
                             "comment_id" SERIAL PRIMARY KEY,
                             "post_id" INT NOT NULL,
@@ -169,6 +172,15 @@ CREATE TABLE "Post_Hashtags" (
                                  FOREIGN KEY ("hashtag_id") REFERENCES "Hashtags"("hashtag_id") ON DELETE CASCADE
 );
 
+CREATE TABLE "Post_Media" (
+                              "media_id" SERIAL PRIMARY KEY,
+                              "post_id" INT NOT NULL,
+                              "media_url" VARCHAR(255) NOT NULL,
+                              "media_type" media_type_enum NOT NULL,
+                              "display_order" INT DEFAULT 0,
+
+                              FOREIGN KEY ("post_id") REFERENCES "Posts"("post_id") ON DELETE CASCADE
+);
 -- =============================================
 -- 3. create INDEXES
 -- =============================================
@@ -184,7 +196,7 @@ CREATE INDEX ON "Reports" ("comment_id");
 CREATE INDEX ON "Tags" ("tagged_user_id");
 CREATE INDEX ON "Post_Hashtags" ("hashtag_id");
 CREATE INDEX ON "Hashtags" ("tag_text");
-
+CREATE INDEX ON "Post_Media" ("post_id");
 -- =============================================
 -- 4. triggers
 -- =============================================

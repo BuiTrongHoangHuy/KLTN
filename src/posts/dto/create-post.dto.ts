@@ -1,4 +1,12 @@
-import { IsEnum, IsOptional, IsString, IsUrl } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { MediaInputDto } from './media-input.dto';
 
 type PrivacyEnum = 'public' | 'friends' | 'private';
 
@@ -7,9 +15,11 @@ export class CreatePostDto {
   @IsOptional()
   content?: string;
 
-  @IsUrl()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => MediaInputDto)
   @IsOptional()
-  mediaUrl?: string;
+  medias?: MediaInputDto[];
 
   @IsEnum(['public', 'friends', 'private'])
   @IsOptional()

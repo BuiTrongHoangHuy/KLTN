@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './posts/posts.module';
 import { LikesModule } from './likes/likes.module';
 import { FriendshipsModule } from './friendships/friendships.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { FriendshipsModule } from './friendships/friendships.module';
     PostsModule,
     LikesModule,
     FriendshipsModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

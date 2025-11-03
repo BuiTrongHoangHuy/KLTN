@@ -11,6 +11,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Like } from '../../likes/entities/like.entity';
+import { PostMedia } from './post-media.entity';
 
 type PrivacyEnum = 'public' | 'friends' | 'private';
 
@@ -24,9 +25,6 @@ export class Post {
 
   @Column({ type: 'text', nullable: true })
   content: string;
-
-  @Column({ name: 'media_url', nullable: true })
-  mediaUrl: string;
 
   @Column({
     type: 'enum',
@@ -50,4 +48,9 @@ export class Post {
 
   @OneToMany(() => Like, (like) => like.user)
   likes: Like[];
+
+  @OneToMany(() => PostMedia, (media) => media.post, {
+    cascade: true,
+  })
+  medias: PostMedia[];
 }
