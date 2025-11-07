@@ -11,7 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { CommentLike } from '../../likes/entities/comment-like.entity';
-
+import { Report } from 'src/reports/entities/report.entity';
 type AnalysisStatusEnum = 'positive' | 'neutral' | 'negative';
 
 @Entity({ name: 'Comments' })
@@ -55,4 +55,7 @@ export class Comment {
 
   @OneToMany(() => CommentLike, (like) => like.comment)
   likes: CommentLike[];
+
+  @OneToMany(() => Report, (report) => report.comment)
+  reports: Report[];
 }

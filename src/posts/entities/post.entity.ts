@@ -13,6 +13,7 @@ import {
 import { Like } from '../../likes/entities/like.entity';
 import { PostMedia } from './post-media.entity';
 import { PostHashtag } from '../../hashtags/entities/post-hashtag.entity';
+import { Report } from 'src/reports/entities/report.entity';
 
 type PrivacyEnum = 'public' | 'friends' | 'private';
 
@@ -57,4 +58,7 @@ export class Post {
 
   @OneToMany(() => PostHashtag, (postHashtag) => postHashtag.post)
   hashtags: PostHashtag[];
+
+  @OneToMany(() => Report, (report) => report.post)
+  reports: Report[];
 }

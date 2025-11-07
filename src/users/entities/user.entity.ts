@@ -4,7 +4,7 @@ import { Comment } from 'src/comments/entities/comment.entity';
 import { Like } from '../../likes/entities/like.entity';
 import { CommentLike } from '../../likes/entities/comment-like.entity';
 import { Friendship } from '../../friendships/entities/friendship.entity';
-
+import { Report } from 'src/reports/entities/report.entity';
 @Entity({ name: 'Users' })
 export class User {
   @PrimaryGeneratedColumn({ name: 'user_id' })
@@ -55,4 +55,7 @@ export class User {
 
   @OneToMany(() => Friendship, (friendship) => friendship.userOne)
   friendshipsReceived: Friendship[]; // userId = user_two_id
+
+  @OneToMany(() => Report, (report) => report.reporter)
+  reports: Report[];
 }
