@@ -35,4 +35,9 @@ export class CommentsController {
   ) {
     return this.commentsService.create(createCommentDto, postId, user.sub);
   }
+
+  @Get()
+  findAllById(@Param('postId', ParseIntPipe) postId: number) {
+    return this.commentsService.findAllByPostId(postId);
+  }
 }
