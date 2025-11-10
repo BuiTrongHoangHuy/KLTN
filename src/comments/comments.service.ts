@@ -105,4 +105,27 @@ export class CommentsService {
       throw new InternalServerErrorException('Could not update comment');
     }
   }
+
+  async remove(commentId: number, user: JwtPayload) {
+    const comment = await this.commentsRepository.findOneBy({
+      commentId: commentId,
+    });
+
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
+    }
+
+    if (comment.userId !== user.sub && user.role !== 'admin') {
+      throw new UnauthorizedException(
+        'You do not have permission to delete this comment.',
+      );
+    }
+
+    try {
+      await this.commentsRepository.remove(comment);
+      return { message: 'Delete success' };
+    } catch (error) {
+      throw new InternalServerErrorException('Could not delete comment');
+    }
+  }
 }

@@ -51,4 +51,23 @@ export class CommentsController {
     return this.commentsService.update(commentId, updateCommentDto, user.sub);
   }
 
+  @Delete(':id')
+  @UseGuards(AtGuard)
+  @HttpCode(HttpStatus.OK)
+  remove(
+    @Param('id', ParseIntPipe) commentId: number,
+    @GetUser() user: JwtPayload,
+  ) {
+    return this.commentsService.remove(commentId, user);
+  }
+
+  @Post(':id/like')
+  @UseGuards(AtGuard)
+  @HttpCode(HttpStatus.OK)
+  toggleLike(
+    @Param('id', ParseIntPipe) commentId: number,
+    @GetUser() user: JwtPayload,
+  ) {
+    return this.likesService.toggleCommentLike(commentId, user.sub);
+  }
 }
