@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
+import { AiModule } from './ai/ai.module';
 import { LikesModule } from './likes/likes.module';
 import { FriendshipsModule } from './friendships/friendships.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
@@ -36,6 +37,7 @@ import { ReportsModule } from './reports/reports.module';
     AuthModule,
     PostsModule,
     CommentsModule,
+    AiModule,
     LikesModule,
     FriendshipsModule,
     CloudinaryModule,
