@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './posts/posts.module';
+import { CommentsModule } from './comments/comments.module';
 import { LikesModule } from './likes/likes.module';
 import { FriendshipsModule } from './friendships/friendships.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
@@ -34,6 +35,7 @@ import { ReportsModule } from './reports/reports.module';
     UsersModule,
     AuthModule,
     PostsModule,
+    CommentsModule,
     LikesModule,
     FriendshipsModule,
     CloudinaryModule,
