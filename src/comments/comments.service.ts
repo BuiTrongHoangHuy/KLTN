@@ -68,4 +68,41 @@ export class CommentsService {
     }
   }
 
+  async update(
+    commentId: number,
+    updateCommentDto: UpdateCommentDto,
+    userId: number,
+  ) {
+    const comment = await this.commentsRepository.findOneBy({
+      commentId: commentId,
+    });
+
+    if (!comment) {
+      throw new NotFoundException('Comment not found');
+    }
+
+    if (comment.userId !== userId) {
+      throw new UnauthorizedException(
+        'You do not have permission to edit this comment.',
+      );
+    }
+
+    const { content } = updateCommentDto;
+    const analysisStatus = await this.aiService.analyzeComment(content);
+
+    if (analysisStatus === 'negative') {
+      throw new ForbiddenException(
+        'Comment update rejected due to inappropriate content',
+      );
+    }
+
+    try {
+      comment.content = content;
+      comment.analysisStatus = analysisStatus;
+      await this.commentsRepository.save(comment);
+      return comment;
+    } catch (error) {
+      throw new InternalServerErrorException('Could not update comment');
+    }
+  }
 }

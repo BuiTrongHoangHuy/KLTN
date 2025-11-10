@@ -40,4 +40,15 @@ export class CommentsController {
   findAllById(@Param('postId', ParseIntPipe) postId: number) {
     return this.commentsService.findAllByPostId(postId);
   }
+
+  @Patch(':id')
+  @UseGuards(AtGuard)
+  update(
+    @Param('id', ParseIntPipe) commentId: number,
+    @Body() updateCommentDto: UpdateCommentDto,
+    @GetUser() user: JwtPayload,
+  ) {
+    return this.commentsService.update(commentId, updateCommentDto, user.sub);
+  }
+
 }
