@@ -13,6 +13,7 @@ import { FriendshipsModule } from './friendships/friendships.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { HashtagsModule } from './hashtags/hashtags.module';
 import { ReportsModule } from './reports/reports.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { ReportsModule } from './reports/reports.module';
     CloudinaryModule,
     HashtagsModule,
     ReportsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
