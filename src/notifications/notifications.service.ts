@@ -28,4 +28,25 @@ export class NotificationsService {
       throw new InternalServerErrorException('Error creating notification');
     }
   }
+
+  async getNotificationsForUser(userId: number) {
+    return this.notificationsRepository
+      .createQueryBuilder('notification')
+      .leftJoin('notification.sender', 'sender')
+      .select([
+        'notification.notificationId',
+        'notification.type',
+        'notification.targetId',
+        'notification.isRead',
+        'notification.createdAt',
+        'sender.userId',
+        'sender.username',
+        'sender.fullName',
+        'sender.avatarUrl',
+      ])
+      .where('notification.recipientId = :userId', { userId })
+      .orderBy('notification.createdAt', 'DESC')
+      .limit(50)
+      .getMany();
+  }
 }
