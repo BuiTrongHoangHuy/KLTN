@@ -40,12 +40,12 @@ export class PostsController {
 
   @Get()
   findAll() {
-    return this.postsService.findAll();
+    return this.postsService.findAllPublic();
   }
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.postsService.findOne(+id);
+    return this.postsService.findById(+id);
   }
 
   @Patch(':id')

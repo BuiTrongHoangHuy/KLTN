@@ -68,8 +68,147 @@ export class PostsService {
     );
   }
 
-  findAll() {
-    return `This action returns all posts`;
+  async findAll() {
+    const posts = await this.postsRepository
+      .createQueryBuilder('post')
+      .leftJoin('post.user', 'user')
+      .leftJoinAndSelect('post.medias', 'medias')
+      .select([
+        'post.postId',
+        'post.content',
+        'post.privacy',
+        'post.created_at',
+        'user.userId',
+        'user.username',
+        'user.fullName',
+        'user.avatarUrl',
+        'medias.mediaId',
+        'medias.mediaUrl',
+        'medias.mediaType',
+        'medias.displayOrder',
+      ])
+      .orderBy('medias.displayOrder', 'ASC')
+      .orderBy('post.created_at', 'DESC')
+      .getMany();
+
+    if (!posts) {
+      throw new NotFoundException('Post not found');
+    }
+    return posts;
+  }
+
+  async findAllPublic() {
+    try {
+      const { entities, raw } = await this.postsRepository
+        .createQueryBuilder('post')
+        .leftJoin('post.user', 'user')
+        .leftJoinAndSelect('post.medias', 'medias')
+        .select([
+          'post.postId',
+          'post.content',
+          'post.privacy',
+          'post.created_at',
+          'user.userId',
+          'user.username',
+          'user.fullName',
+          'user.avatarUrl',
+          'medias.mediaId',
+          'medias.mediaUrl',
+          'medias.mediaType',
+          'medias.displayOrder',
+        ])
+        .addSelect((subQuery) => {
+          return subQuery
+            .select('COUNT(*)', 'count')
+            .from('Likes', 'like')
+            .where('like.postId = post.postId');
+        }, 'likeCount')
+        .addSelect((subQuery) => {
+          return subQuery
+            .select('COUNT(*)', 'count')
+            .from('Comments', 'comment')
+            .where('comment.postId = post.postId')
+            .andWhere(
+              "comment.analysisStatus IS NULL OR comment.analysisStatus != 'negative'",
+            );
+        }, 'commentCount')
+        .where('post.privacy = :privacy', { privacy: 'public' })
+        .orderBy('post.created_at', 'DESC')
+        .addOrderBy('medias.displayOrder', 'ASC')
+        .getRawAndEntities();
+
+      const postsWithCounts = entities.map((post) => {
+        const rawData = raw.find((r) => r.post_post_id === post.postId);
+        return {
+          ...post,
+          likeCount: parseInt(rawData.likeCount) || 0,
+          commentCount: parseInt(rawData.commentCount) || 0,
+        };
+      });
+
+      return postsWithCounts;
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Error retrieving posts');
+    }
+  }
+
+  async findById(id: number) {
+    const { entities, raw } = await this.postsRepository
+      .createQueryBuilder('post')
+      .leftJoin('post.user', 'user')
+      .leftJoinAndSelect('post.medias', 'medias')
+      .select([
+        'post.postId',
+        'post.content',
+        'post.privacy',
+        'post.created_at',
+        'user.userId',
+        'user.username',
+        'user.fullName',
+        'user.avatarUrl',
+        'medias.mediaId',
+        'medias.mediaUrl',
+        'medias.mediaType',
+        'medias.displayOrder',
+      ])
+
+      .addSelect((subQuery) => {
+        return subQuery
+          .select('COUNT(*)', 'count')
+          .from('Likes', 'like')
+          .where('like.postId = post.postId');
+      }, 'likeCount')
+
+      .addSelect((subQuery) => {
+        return subQuery
+          .select('COUNT(*)', 'count')
+          .from('Comments', 'comment')
+          .where('comment.postId = post.postId')
+          .andWhere(
+            "comment.analysisStatus IS NULL OR comment.analysisStatus != 'negative'",
+          );
+      }, 'commentCount')
+
+      .where('post.postId = :id', { id })
+      .orderBy('medias.displayOrder', 'ASC')
+      .getRawAndEntities();
+
+    if (!entities || entities.length === 0) {
+      throw new NotFoundException('Không tìm thấy bài viết');
+    }
+
+    // 6. Gộp kết quả
+    const post = entities[0];
+    const rawData = raw[0];
+
+    const result = {
+      ...post,
+      likeCount: parseInt(rawData.likeCount) || 0,
+      commentCount: parseInt(rawData.commentCount) || 0,
+    };
+
+    return result;
   }
 
   async findOne(id: number) {
@@ -80,7 +219,6 @@ export class PostsService {
       .select([
         'post.postId',
         'post.content',
-        'post.mediaUrl',
         'post.privacy',
         'post.created_at',
         'user.userId',
@@ -93,7 +231,7 @@ export class PostsService {
         'medias.displayOrder',
       ])
       .where('post.postId = :id', { id })
-      .orderBy('media.displayOrder', 'ASC')
+      .orderBy('medias.displayOrder', 'ASC')
       .getOne();
 
     if (!post) {

@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/filters/exception.filter';
 import { TransformInterceptor } from './common/interceptors/transformer.interceptor';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-
+import 'reflect-metadata';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
