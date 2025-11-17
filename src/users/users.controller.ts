@@ -18,12 +18,14 @@ import { GetUser } from '../auth/decorators/get-user.decorator';
 import type { JwtPayload } from '../auth/strategies/rt.strategy';
 import { AtGuard } from '../auth/guards/at.guard';
 import { FriendshipsService } from '../friendships/friendships.service';
+import { FollowsService } from '../follows/follows.service';
 
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly friendshipsService: FriendshipsService,
+    private readonly followsService: FollowsService,
   ) {}
 
   @Post()
@@ -69,5 +71,15 @@ export class UsersController {
     @GetUser() user: JwtPayload,
   ) {
     return this.friendshipsService.sendFriendRequest(user.sub, receiverId);
+  }
+
+  @Post(':id/follow')
+  @UseGuards(AtGuard)
+  @HttpCode(HttpStatus.OK)
+  toggleFollow(
+    @Param('id', ParseIntPipe) followingId: number,
+    @GetUser() user: JwtPayload,
+  ) {
+    return this.followsService.toggleFollow(user.sub, followingId);
   }
 }

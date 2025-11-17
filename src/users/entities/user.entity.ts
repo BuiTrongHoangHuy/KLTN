@@ -6,6 +6,7 @@ import { CommentLike } from '../../likes/entities/comment-like.entity';
 import { Friendship } from '../../friendships/entities/friendship.entity';
 import { Report } from 'src/reports/entities/report.entity';
 import { Notification } from 'src/notifications/entities/notification.entity';
+import { Follow } from '../../follows/entities/follow.entity';
 @Entity({ name: 'Users' })
 export class User {
   @PrimaryGeneratedColumn({ name: 'user_id' })
@@ -65,4 +66,10 @@ export class User {
 
   @OneToMany(() => Notification, (n) => n.sender)
   notificationsSent: Notification[];
+
+  @OneToMany(() => Follow, (follow) => follow.follower)
+  following: Follow[];
+
+  @OneToMany(() => Follow, (follow) => follow.following)
+  followers: Follow[];
 }

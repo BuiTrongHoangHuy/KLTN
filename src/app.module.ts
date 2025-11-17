@@ -14,6 +14,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { HashtagsModule } from './hashtags/hashtags.module';
 import { ReportsModule } from './reports/reports.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { FollowsModule } from './follows/follows.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     HashtagsModule,
     ReportsModule,
     NotificationsModule,
+    FollowsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
