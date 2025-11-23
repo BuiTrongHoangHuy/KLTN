@@ -59,4 +59,9 @@ export class FriendshipsController {
   findMyFriends(@GetUser() user: JwtPayload) {
     return this.friendshipsService.findMyFriends(user.sub);
   }
+
+  @Get('requests/received')
+  findReceivedRequests(@GetUser() user: JwtPayload) {
+    return this.friendshipsService.findReceivedRequests(user.sub);
+  }
 }

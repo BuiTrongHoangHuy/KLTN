@@ -7,12 +7,17 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Friendship } from './entities/friendship.entity';
 import { Repository } from 'typeorm';
+import { NotificationsService } from 'src/notifications/notifications.service';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
+import { CreateNotificationDto } from '../notifications/entities/create-notification.dto';
 
 @Injectable()
 export class FriendshipsService {
   constructor(
     @InjectRepository(Friendship)
     private friendshipsRepository: Repository<Friendship>,
+    private notificationsService: NotificationsService,
+    private notificationsGateway: NotificationsGateway,
   ) {}
 
   async sendFriendRequest(senderId: number, receiverId: number) {
@@ -197,7 +202,47 @@ export class FriendshipsService {
 
       return friends;
     } catch (error) {
-      throw new InternalServerErrorException('Lỗi khi tải danh sách bạn bè');
+      throw new InternalServerErrorException('Error finding friends');
+    }
+  }
+
+  async findReceivedRequests(userId: number) {
+    try {
+      const relationships = await this.friendshipsRepository
+        .createQueryBuilder('friendship')
+        .leftJoin('friendship.userOne', 'userOne')
+        .leftJoin('friendship.userTwo', 'userTwo')
+        .select([
+          'userOne.userId',
+          'userOne.username',
+          'userOne.fullName',
+          'userOne.avatarUrl',
+          'userTwo.userId',
+          'userTwo.username',
+          'userTwo.fullName',
+          'userTwo.avatarUrl',
+          'friendship.actionUserId',
+        ])
+        .where('friendship.status = :status', { status: 'pending' })
+        .andWhere(
+          '(friendship.userOneId = :userId OR friendship.userTwoId = :userId)',
+          { userId },
+        )
+        .andWhere('friendship.actionUserId != :userId', { userId })
+        .getMany();
+
+      const senders = relationships.map((rel) => {
+        if (rel.actionUserId === rel.userOne.userId) {
+          return rel.userOne;
+        }
+        return rel.userTwo;
+      });
+
+      return senders;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error finding received friend requests',
+      );
     }
   }
 }
