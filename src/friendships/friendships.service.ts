@@ -53,6 +53,22 @@ export class FriendshipsService {
       });
 
       await this.friendshipsRepository.save(newRequest);
+      const notifDto: CreateNotificationDto = {
+        recipientId: receiverId,
+        senderId: senderId,
+        type: 'friend_request',
+        targetId: senderId,
+      };
+
+      const notification =
+        await this.notificationsService.createNotification(notifDto);
+
+      if (notification) {
+        this.notificationsGateway.emitNotificationToUser(
+          receiverId,
+          notification,
+        );
+      }
       return { message: 'Sent friend request' };
     } catch (error) {
       if (
