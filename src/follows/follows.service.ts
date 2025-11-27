@@ -17,7 +17,7 @@ export class FollowsService {
     private followsRepository: Repository<Follow>,
     private notificationsService: NotificationsService,
     private notificationsGateway: NotificationsGateway,
-  ) {}
+  ) { }
 
   async toggleFollow(followerId: number, followingId: number) {
     if (followerId === followingId) {
@@ -56,5 +56,12 @@ export class FollowsService {
     } catch (error) {
       throw new InternalServerErrorException('Error toggling follow');
     }
+  }
+  async isFollowing(followerId: number, followingId: number) {
+    const follow = await this.followsRepository.findOneBy({
+      followerId,
+      followingId,
+    });
+    return !!follow;
   }
 }

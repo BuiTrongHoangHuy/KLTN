@@ -26,7 +26,7 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly friendshipsService: FriendshipsService,
     private readonly followsService: FollowsService,
-  ) {}
+  ) { }
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
@@ -45,8 +45,28 @@ export class UsersController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: string) {
-    return this.usersService.findOne(+id);
+  @UseGuards(AtGuard)
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser() user: JwtPayload,
+  ) {
+    const userProfile = await this.usersService.findOne(id);
+    let friendshipStatus: any = null;
+    let isFollowing = false;
+
+    if (user.sub !== id) {
+      friendshipStatus = await this.friendshipsService.getFriendshipStatus(
+        user.sub,
+        id,
+      );
+      isFollowing = await this.followsService.isFollowing(user.sub, id);
+    }
+
+    return {
+      ...userProfile,
+      friendshipStatus,
+      isFollowing,
+    };
   }
 
   @Patch('me')

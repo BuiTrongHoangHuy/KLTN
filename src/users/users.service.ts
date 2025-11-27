@@ -14,7 +14,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-  ) {}
+  ) { }
   async create(createUserDto: CreateUserDto) {
     try {
       const { username, email, password, fullName } = createUserDto;
@@ -55,16 +55,62 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    const user = await this.usersRepository.findOne({
-      where: { userId: id },
-    });
+    const { entities, raw } = await this.usersRepository
+      .createQueryBuilder('user')
+      .where('user.userId = :id', { id })
+      .addSelect(
+        (subQuery) =>
+          subQuery
+            .select('COUNT(p.post_id)', 'postsCount')
+            .from('Posts', 'p')
+            .where('p.user_id = user.user_id'),
+        'postsCount',
+      )
+      .addSelect(
+        (subQuery) =>
+          subQuery
+            .select('COUNT(f.follower_id)', 'followersCount')
+            .from('Follows', 'f')
+            .where('f.following_id = user.user_id'),
+        'followersCount',
+      )
+      .addSelect(
+        (subQuery) =>
+          subQuery
+            .select('COUNT(f.following_id)', 'followingCount')
+            .from('Follows', 'f')
+            .where('f.follower_id = user.user_id'),
+        'followingCount',
+      )
+      .addSelect(
+        (subQuery) =>
+          subQuery
+            .select('COUNT(*)', 'friendsCount')
+            .from('Friendships', 'fr')
+            .where(
+              "(fr.user_one_id = user.user_id OR fr.user_two_id = user.user_id) AND fr.status = 'accepted'",
+            ),
+        'friendsCount',
+      )
+      .getRawAndEntities();
+
+    const user = entities[0];
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
+    const rawData = raw[0];
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, hashedRefreshToken, ...result } = user;
-    return result;
+
+    return {
+      ...result,
+      postsCount: parseInt(rawData.postsCount || '0', 10),
+      followersCount: parseInt(rawData.followersCount || '0', 10),
+      followingCount: parseInt(rawData.followingCount || '0', 10),
+      friendsCount: parseInt(rawData.friendsCount || '0', 10),
+    };
   }
 
   async updateProfile(userId: number, updateUserDto: UpdateUserDto) {

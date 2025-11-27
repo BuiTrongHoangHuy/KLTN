@@ -18,7 +18,7 @@ export class FriendshipsService {
     private friendshipsRepository: Repository<Friendship>,
     private notificationsService: NotificationsService,
     private notificationsGateway: NotificationsGateway,
-  ) {}
+  ) { }
 
   async sendFriendRequest(senderId: number, receiverId: number) {
     if (senderId === receiverId) {
@@ -260,5 +260,13 @@ export class FriendshipsService {
         'Error finding received friend requests',
       );
     }
+  }
+  async getFriendshipStatus(userId1: number, userId2: number) {
+    const relationship = await this.getRelationship(userId1, userId2);
+    if (!relationship) return null;
+    return {
+      status: relationship.status,
+      actionUserId: relationship.actionUserId,
+    };
   }
 }
