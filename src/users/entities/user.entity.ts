@@ -55,7 +55,7 @@ export class User {
   @OneToMany(() => Friendship, (friendship) => friendship.userOne)
   friendshipsInitiated: Friendship[]; // userId = user_one_id
 
-  @OneToMany(() => Friendship, (friendship) => friendship.userOne)
+  @OneToMany(() => Friendship, (friendship) => friendship.userTwo)
   friendshipsReceived: Friendship[]; // userId = user_two_id
 
   @OneToMany(() => Report, (report) => report.reporter)
