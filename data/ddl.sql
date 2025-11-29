@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS
     "Users", "Posts", "Comments", "Likes", "Comment_Likes",
     "Friendships", "Follows", "Notifications", "Reports",
     "Tags", "Hashtags", "Post_Hashtags", "Post_Media" CASCADE;
+DROP TABLE IF EXISTS "Group_Members", "Groups" CASCADE;
 
 -- delete ENUM
 DROP TYPE IF EXISTS role_enum;
@@ -11,7 +12,8 @@ DROP TYPE IF EXISTS friendship_status_enum;
 DROP TYPE IF EXISTS notification_type_enum;
 DROP TYPE IF EXISTS report_status_enum;
 DROP TYPE IF EXISTS media_type_enum;
-
+DROP TYPE IF EXISTS group_role_enum;
+DROP TYPE IF EXISTS group_privacy_enum;
 -- =============================================
 -- 1. create ENUM
 -- =============================================
@@ -23,6 +25,8 @@ CREATE TYPE friendship_status_enum AS ENUM ('pending', 'accepted', 'blocked');
 CREATE TYPE notification_type_enum AS ENUM ('like_post', 'like_comment', 'comment', 'reply', 'friend_request', 'follow', 'tag');
 CREATE TYPE report_status_enum AS ENUM ('pending', 'resolved');
 CREATE TYPE media_type_enum AS ENUM ('image', 'video');
+CREATE TYPE group_role_enum AS ENUM ('admin', 'moderator', 'member');
+CREATE TYPE group_privacy_enum AS ENUM ('public', 'private');
 -- =============================================
 -- 2. create TABLES
 -- =============================================
@@ -53,7 +57,10 @@ CREATE TABLE "Posts" (
                          FOREIGN KEY ("user_id") REFERENCES "Users"("user_id") ON DELETE CASCADE
 );
 ALTER TABLE "Posts" DROP COLUMN "media_url";
-
+ALTER TABLE "Posts"
+    ADD COLUMN "group_id" INT,
+    ADD CONSTRAINT "fk_posts_groups"
+        FOREIGN KEY ("group_id") REFERENCES "Groups"("group_id") ON DELETE CASCADE;
 CREATE TABLE "Comments" (
                             "comment_id" SERIAL PRIMARY KEY,
                             "post_id" INT NOT NULL,
@@ -181,6 +188,31 @@ CREATE TABLE "Post_Media" (
 
                               FOREIGN KEY ("post_id") REFERENCES "Posts"("post_id") ON DELETE CASCADE
 );
+
+CREATE TABLE "Groups" (
+                          "group_id" SERIAL PRIMARY KEY,
+                          "name" VARCHAR(100) NOT NULL,
+                          "description" TEXT,
+                          "cover_url" VARCHAR(255),
+                          "privacy" group_privacy_enum NOT NULL DEFAULT 'public',
+                          "creator_id" INT NOT NULL,
+                          "member_count" INT DEFAULT 1,
+                          "created_at" TIMESTAMPTZ DEFAULT NOW(),
+                          "updated_at" TIMESTAMPTZ,
+
+                          FOREIGN KEY ("creator_id") REFERENCES "Users"("user_id") ON DELETE CASCADE
+);
+
+CREATE TABLE "Group_Members" (
+                                 "group_id" INT NOT NULL,
+                                 "user_id" INT NOT NULL,
+                                 "role" group_role_enum NOT NULL DEFAULT 'member',
+                                 "joined_at" TIMESTAMPTZ DEFAULT NOW(),
+
+                                 PRIMARY KEY ("group_id", "user_id"), -- Một user chỉ tham gia 1 nhóm 1 lần
+                                 FOREIGN KEY ("group_id") REFERENCES "Groups"("group_id") ON DELETE CASCADE,
+                                 FOREIGN KEY ("user_id") REFERENCES "Users"("user_id") ON DELETE CASCADE
+);
 -- =============================================
 -- 3. create INDEXES
 -- =============================================
@@ -197,6 +229,9 @@ CREATE INDEX ON "Tags" ("tagged_user_id");
 CREATE INDEX ON "Post_Hashtags" ("hashtag_id");
 CREATE INDEX ON "Hashtags" ("tag_text");
 CREATE INDEX ON "Post_Media" ("post_id");
+CREATE INDEX ON "Group_Members" ("user_id");
+CREATE INDEX ON "Posts" ("group_id");
+CREATE INDEX ON "Groups" ("name");
 -- =============================================
 -- 4. triggers
 -- =============================================
@@ -228,3 +263,8 @@ CREATE TRIGGER set_timestamp
     BEFORE UPDATE ON "Friendships"
     FOR EACH ROW
     EXECUTE FUNCTION trigger_set_timestamp();
+
+CREATE TRIGGER set_timestamp
+    BEFORE UPDATE ON "Groups"
+    FOR EACH ROW
+EXECUTE FUNCTION trigger_set_timestamp();
