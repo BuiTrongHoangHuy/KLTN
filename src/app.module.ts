@@ -15,6 +15,7 @@ import { HashtagsModule } from './hashtags/hashtags.module';
 import { ReportsModule } from './reports/reports.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { FollowsModule } from './follows/follows.module';
+import { GroupsModule } from './groups/groups.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { FollowsModule } from './follows/follows.module';
     ReportsModule,
     NotificationsModule,
     FollowsModule,
+    GroupsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

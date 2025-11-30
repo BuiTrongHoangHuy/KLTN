@@ -14,6 +14,7 @@ import { Like } from '../../likes/entities/like.entity';
 import { PostMedia } from './post-media.entity';
 import { PostHashtag } from '../../hashtags/entities/post-hashtag.entity';
 import { Report } from 'src/reports/entities/report.entity';
+import { Group } from '../../groups/entities/group.entity';
 
 type PrivacyEnum = 'public' | 'friends' | 'private';
 
@@ -58,6 +59,13 @@ export class Post {
 
   @OneToMany(() => PostHashtag, (postHashtag) => postHashtag.post)
   hashtags: PostHashtag[];
+
+  @Column({ name: 'group_id', nullable: true })
+  groupId: number;
+
+  @ManyToOne(() => Group, (group) => group.posts)
+  @JoinColumn({ name: 'group_id' })
+  group: Group;
 
   @OneToMany(() => Report, (report) => report.post)
   reports: Report[];
