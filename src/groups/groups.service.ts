@@ -229,4 +229,35 @@ export class GroupsService {
 
     return { message: 'Member removed' };
   }
+
+  async transferOwnership(groupId: number, userId: number, newOwnerId: number) {
+    const group = await this.findOne(groupId);
+
+    if (group.creatorId !== userId) {
+      throw new ForbiddenException('Only the owner can transfer ownership');
+    }
+
+    if (userId === newOwnerId) {
+      throw new BadRequestException('You are already the owner');
+    }
+
+    const newOwnerMember = await this.groupMembersRepository.findOneBy({
+      groupId,
+      userId: newOwnerId,
+    });
+
+    if (!newOwnerMember) {
+      throw new BadRequestException('New owner must be a member of the group');
+    }
+
+    group.creatorId = newOwnerId;
+    await this.groupsRepository.save(group);
+
+    if (newOwnerMember.role !== 'admin') {
+      newOwnerMember.role = 'admin';
+      await this.groupMembersRepository.save(newOwnerMember);
+    }
+
+    return { message: 'Ownership transferred successfully' };
+  }
 }

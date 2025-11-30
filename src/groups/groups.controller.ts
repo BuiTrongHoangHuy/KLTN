@@ -83,4 +83,14 @@ export class GroupsController {
   ) {
     return this.groupsService.removeMember(id, user.sub, targetUserId);
   }
+
+  @Post(':id/transfer-ownership')
+  @UseGuards(AtGuard)
+  transferOwnership(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('newOwnerId', ParseIntPipe) newOwnerId: number,
+    @GetUser() user: JwtPayload,
+  ) {
+    return this.groupsService.transferOwnership(id, user.sub, newOwnerId);
+  }
 }
