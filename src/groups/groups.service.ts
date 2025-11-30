@@ -19,6 +19,8 @@ export class GroupsService {
     private groupsRepository: Repository<Group>,
     @InjectRepository(GroupMember)
     private groupMembersRepository: Repository<GroupMember>,
+    @InjectRepository(GroupJoinRequest)
+    private groupJoinRequestsRepository: Repository<GroupJoinRequest>,
   ) { }
 
   async create(createGroupDto: CreateGroupDto, creatorId: number) {
@@ -84,5 +86,44 @@ export class GroupsService {
     return this.groupsRepository.remove(group);
   }
 
+  async join(groupId: number, userId: number) {
+    const group = await this.findOne(groupId);
+    const existingMember = await this.groupMembersRepository.findOneBy({
+      groupId,
+      userId,
+    });
 
+    if (existingMember) {
+      throw new BadRequestException('Already a member');
+    }
+
+    if (group.privacy === 'private') {
+      const existingRequest = await this.groupJoinRequestsRepository.findOneBy({
+        groupId,
+        userId,
+      });
+      if (existingRequest) {
+        throw new BadRequestException('Join request already sent');
+      }
+
+      const request = this.groupJoinRequestsRepository.create({
+        groupId,
+        userId,
+      });
+      await this.groupJoinRequestsRepository.save(request);
+      return { message: 'Join request sent' };
+    }
+
+    const newMember = this.groupMembersRepository.create({
+      groupId,
+      userId,
+      role: 'member',
+    });
+    await this.groupMembersRepository.save(newMember);
+
+    group.memberCount++;
+    await this.groupsRepository.save(group);
+
+    return { message: 'Joined group successfully' };
+  }
 }

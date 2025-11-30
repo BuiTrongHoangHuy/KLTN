@@ -2,7 +2,7 @@ DROP TABLE IF EXISTS
     "Users", "Posts", "Comments", "Likes", "Comment_Likes",
     "Friendships", "Follows", "Notifications", "Reports",
     "Tags", "Hashtags", "Post_Hashtags", "Post_Media" CASCADE;
-DROP TABLE IF EXISTS "Group_Members", "Groups" CASCADE;
+DROP TABLE IF EXISTS "Group_Members", "Groups", "Group_Join_Requests" CASCADE;
 
 -- delete ENUM
 DROP TYPE IF EXISTS role_enum;
@@ -213,6 +213,17 @@ CREATE TABLE "Group_Members" (
                                  FOREIGN KEY ("group_id") REFERENCES "Groups"("group_id") ON DELETE CASCADE,
                                  FOREIGN KEY ("user_id") REFERENCES "Users"("user_id") ON DELETE CASCADE
 );
+
+CREATE TABLE "Group_Join_Requests" (
+                                       "group_id" INT NOT NULL,
+                                       "user_id" INT NOT NULL,
+                                       "created_at" TIMESTAMPTZ DEFAULT NOW(),
+
+                                       PRIMARY KEY ("group_id", "user_id"),
+                                       FOREIGN KEY ("group_id") REFERENCES "Groups"("group_id") ON DELETE CASCADE,
+                                       FOREIGN KEY ("user_id") REFERENCES "Users"("user_id") ON DELETE CASCADE
+);
+
 -- =============================================
 -- 3. create INDEXES
 -- =============================================
@@ -267,4 +278,4 @@ CREATE TRIGGER set_timestamp
 CREATE TRIGGER set_timestamp
     BEFORE UPDATE ON "Groups"
     FOR EACH ROW
-EXECUTE FUNCTION trigger_set_timestamp();
+    EXECUTE FUNCTION trigger_set_timestamp();

@@ -51,4 +51,12 @@ export class GroupsController {
   remove(@Param('id', ParseIntPipe) id: number, @GetUser() user: JwtPayload) {
     return this.groupsService.remove(id, user.sub);
   }
+
+  @Post(':id/join')
+  @UseGuards(AtGuard)
+  join(@Param('id', ParseIntPipe) id: number, @GetUser() user: JwtPayload) {
+    return this.groupsService.join(id, user.sub);
+  }
+
+
 }
