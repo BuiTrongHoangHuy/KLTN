@@ -45,4 +45,10 @@ export class GroupsController {
   ) {
     return this.groupsService.update(id, updateGroupDto, user.sub);
   }
+
+  @Delete(':id')
+  @UseGuards(AtGuard)
+  remove(@Param('id', ParseIntPipe) id: number, @GetUser() user: JwtPayload) {
+    return this.groupsService.remove(id, user.sub);
+  }
 }

@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Group } from './entities/group.entity';
 import { GroupMember } from './entities/group-member.entity';
+import { GroupJoinRequest } from './entities/group-join-request.entity';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 
@@ -18,7 +19,7 @@ export class GroupsService {
     private groupsRepository: Repository<Group>,
     @InjectRepository(GroupMember)
     private groupMembersRepository: Repository<GroupMember>,
-  ) {}
+  ) { }
 
   async create(createGroupDto: CreateGroupDto, creatorId: number) {
     const group = this.groupsRepository.create({
@@ -68,4 +69,20 @@ export class GroupsService {
     Object.assign(group, updateGroupDto);
     return this.groupsRepository.save(group);
   }
+
+  async remove(id: number, userId: number) {
+    const group = await this.findOne(id);
+    const member = await this.groupMembersRepository.findOneBy({
+      groupId: id,
+      userId,
+    });
+
+    if (!member || member.role !== 'admin') {
+      throw new ForbiddenException('Only admin can delete group');
+    }
+
+    return this.groupsRepository.remove(group);
+  }
+
+
 }
