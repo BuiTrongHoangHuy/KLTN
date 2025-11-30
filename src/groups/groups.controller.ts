@@ -58,5 +58,9 @@ export class GroupsController {
     return this.groupsService.join(id, user.sub);
   }
 
-
+  @Post(':id/leave')
+  @UseGuards(AtGuard)
+  leave(@Param('id', ParseIntPipe) id: number, @GetUser() user: JwtPayload) {
+    return this.groupsService.leave(id, user.sub);
+  }
 }

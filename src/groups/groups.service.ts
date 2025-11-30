@@ -126,4 +126,39 @@ export class GroupsService {
 
     return { message: 'Joined group successfully' };
   }
+
+  async leave(groupId: number, userId: number) {
+    const group = await this.findOne(groupId);
+    const member = await this.groupMembersRepository.findOneBy({
+      groupId,
+      userId,
+    });
+
+    if (!member) {
+      throw new BadRequestException('Not a member of this group');
+    }
+
+    if (group.creatorId === userId) {
+      throw new BadRequestException(
+        'Cannot leave group as the owner. Please transfer ownership first.',
+      );
+    }
+
+    if (member.role === 'admin') {
+      const adminCount = await this.groupMembersRepository.count({
+        where: { groupId, role: 'admin' },
+      });
+      if (adminCount <= 1) {
+        throw new BadRequestException(
+          'You are the last admin. Please assign another admin before leaving.',
+        );
+      }
+    }
+
+    await this.groupMembersRepository.remove(member);
+    group.memberCount--;
+    await this.groupsRepository.save(group);
+
+    return { message: 'Left group successfully' };
+  }
 }
