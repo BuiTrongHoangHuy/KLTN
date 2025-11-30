@@ -161,4 +161,72 @@ export class GroupsService {
 
     return { message: 'Left group successfully' };
   }
+
+  async addMember(groupId: number, userId: number, targetUserId: number) {
+    const requester = await this.groupMembersRepository.findOneBy({
+      groupId,
+      userId,
+    });
+    if (!requester || !['admin', 'moderator'].includes(requester.role)) {
+      throw new ForbiddenException('Insufficient permissions');
+    }
+
+    const existing = await this.groupMembersRepository.findOneBy({
+      groupId,
+      userId: targetUserId,
+    });
+    if (existing) throw new BadRequestException('User already in group');
+
+    const newMember = this.groupMembersRepository.create({
+      groupId,
+      userId: targetUserId,
+      role: 'member',
+    });
+    await this.groupMembersRepository.save(newMember);
+
+    const group = await this.findOne(groupId);
+    group.memberCount++;
+    await this.groupsRepository.save(group);
+
+    // Remove join request if exists
+    await this.groupJoinRequestsRepository.delete({
+      groupId,
+      userId: targetUserId,
+    });
+
+    return { message: 'Member added' };
+  }
+
+  async removeMember(groupId: number, userId: number, targetUserId: number) {
+    const requester = await this.groupMembersRepository.findOneBy({
+      groupId,
+      userId,
+    });
+    if (!requester || !['admin', 'moderator'].includes(requester.role)) {
+      throw new ForbiddenException('Insufficient permissions');
+    }
+
+    const target = await this.groupMembersRepository.findOneBy({
+      groupId,
+      userId: targetUserId,
+    });
+    if (!target) throw new NotFoundException('Member not found');
+
+    if (target.role === 'admin' && targetUserId !== userId) {
+      const group = await this.findOne(groupId);
+      if (group.creatorId !== userId) {
+        throw new ForbiddenException(
+          'Only the group creator can remove an admin',
+        );
+      }
+    }
+
+    await this.groupMembersRepository.remove(target);
+
+    const group = await this.findOne(groupId);
+    group.memberCount--;
+    await this.groupsRepository.save(group);
+
+    return { message: 'Member removed' };
+  }
 }

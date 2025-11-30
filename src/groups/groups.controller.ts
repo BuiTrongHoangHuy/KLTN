@@ -63,4 +63,24 @@ export class GroupsController {
   leave(@Param('id', ParseIntPipe) id: number, @GetUser() user: JwtPayload) {
     return this.groupsService.leave(id, user.sub);
   }
+
+  @Post(':id/members')
+  @UseGuards(AtGuard)
+  addMember(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('userId', ParseIntPipe) targetUserId: number,
+    @GetUser() user: JwtPayload,
+  ) {
+    return this.groupsService.addMember(id, user.sub, targetUserId);
+  }
+
+  @Delete(':id/members/:userId')
+  @UseGuards(AtGuard)
+  removeMember(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('userId', ParseIntPipe) targetUserId: number,
+    @GetUser() user: JwtPayload,
+  ) {
+    return this.groupsService.removeMember(id, user.sub, targetUserId);
+  }
 }
